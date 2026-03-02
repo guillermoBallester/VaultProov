@@ -23,7 +23,12 @@ fn main() {
     };
 
     if jpeg::is_jpeg(&bytes) {
-        println!("File is a JPEG");
+        let c2pa = jpeg::find_c2pa_signature(&bytes);
+       if let Some((position, length)) = c2pa {
+           println!("C2PA signature found at offset {} and length {}", position, length)
+       } else {
+           eprintln!("C2PA signature not found");
+       }
     } else {
         eprintln!("File is not a JPEG");
         process::exit(1);
