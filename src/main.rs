@@ -1,29 +1,23 @@
 use std::env;
+use std::fs;
 use std::process;
 
 fn main() {
     println!("Starting VaultProov...");
 
     let args: Vec<String> = env::args().collect();
-    match args.len() {
-        1 => {
-            println!("No arguments provided");
-            process::exit(1)
+    if args.len() != 3 || args[1] != "verify" {
+        println!("Invalid number of arguments");
+        process::exit(1);
+    }
+
+    let filename = &args[2];
+    match fs::read(filename) {
+        Ok(bytes) => {
+            println!("File read successfully {}", bytes.len());
         }
-        2 => {
-            println!("Argument missing, format should be: verify file.xx");
-            process::exit(1)
-        }
-        3 => {
-            if args[1] == "verify" {
-                println!("Verifying file: {}", args[2])
-            } else {
-                println!("Invalid argument: {}", args[1]);
-                process::exit(1)
-            }
-        }
-        _ => {
-            println!("Too many arguments");
+        Err(error) => {
+            println!("File not found: {}", error);
             process::exit(1)
         }
     }
