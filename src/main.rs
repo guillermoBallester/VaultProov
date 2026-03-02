@@ -1,11 +1,8 @@
+mod jpeg;
+
 use std::env;
 use std::fs;
 use std::process;
-
-fn is_jpeg(bytes: &[u8]) -> bool {
-    bytes[0] == 0xFF && bytes[1] == 0xD8
-        && bytes[bytes.len() - 1] == 0xD9 && bytes[bytes.len() - 2] == 0xFF
-}
 
 fn main() {
     println!("Starting VaultProov...");
@@ -25,11 +22,7 @@ fn main() {
         }
     };
 
-    if bytes.len() < 4 {
-        eprintln!("File too small: {}", bytes.len());
-        process::exit(1);
-    }
-    if is_jpeg(&bytes) {
+    if jpeg::is_jpeg(&bytes) {
         println!("File is a JPEG");
     } else {
         eprintln!("File is not a JPEG");
