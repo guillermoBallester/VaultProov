@@ -1,6 +1,7 @@
 [package]
 name = "VaultProov"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
+c2pa = { version = "0.76.1", features = ["file_io"] }
