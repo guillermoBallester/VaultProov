@@ -5,3 +5,4 @@ edition = "2021"
 
 [dependencies]
 c2pa = { version = "0.76.1", features = ["file_io"] }
+thiserror = { version = "2.0.18", features = ["std"]}
