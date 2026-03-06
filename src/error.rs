@@ -4,8 +4,8 @@ use thiserror::Error;
 pub enum VaultProovError {
     #[error("I/O error: {0}")]
     IoError(#[from] std::io::Error),
-    #[error("parsing/verification error {0}")]
-    ParsingError(#[from] c2pa::Error),
+    #[error("C2PA/error {0}")]
+    C2PAError(#[from] c2pa::Error),
     #[error("{0}")]
     Other(String),
 }
