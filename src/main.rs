@@ -1,10 +1,13 @@
 mod error;
 
 use std::env;
+use axum::{routing::get, Router};
 use c2pa::{Builder, Reader, Settings, Context, BuilderIntent};
 use error::VaultProovError;
 
-fn main() -> Result<(), VaultProovError> {
+#[tokio::main]
+async fn main() -> Result<(), VaultProovError> {
+
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
         return Err(VaultProovError::Other("missing arguments".to_string()))
@@ -23,6 +26,13 @@ fn main() -> Result<(), VaultProovError> {
                 return Err(VaultProovError::Other("missing file name".to_string()))
             }
             sign(&args[2], &args[3])?;
+            Ok(())
+        },
+        "serve" => {
+            let app = Router::new()
+                .route("/health", get(health));
+            let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
+            axum::serve(listener, app).await?;
             Ok(())
         }
         _ => Err(VaultProovError::Other("Invalid arguments".to_string()))
@@ -44,4 +54,8 @@ fn sign(input: &str, output: &str) -> Result<(), VaultProovError> {
     builder.set_intent(BuilderIntent::Edit);
     builder.sign_file(shared_context.signer()?, input, output)?;
     Ok(())
+}
+
+async fn health() -> &'static str {
+"OK"
 }
