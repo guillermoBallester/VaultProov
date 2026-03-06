@@ -42,7 +42,8 @@ async fn main() -> Result<(), VaultProovError> {
         "serve" => {
             let app = Router::new()
                 .route("/health", get(health))
-                .route("/verify", post(verify_handler));
+                .route("/verify", post(verify_handler))
+                .route("/sign", post(sign_handler));
             let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await?;
             axum::serve(listener, app).await?;
             Ok(())
@@ -79,4 +80,16 @@ async fn verify_handler(mut multipart: Multipart) -> Result<String, VaultProovEr
     let content_type = field.content_type().ok_or(VaultProovError::Other("missing content type".to_string()))?.to_string();
     let bytes = field.bytes().await.map_err(|_| VaultProovError::Other("missing file".to_string()))?;
     verify(&content_type, &mut Cursor::new(&bytes))
+}
+
+
+async fn sign_handler(mut multipart: Multipart) -> Result<Vec<u8>, VaultProovError> {
+    let file = multipart
+        .next_field().await.map_err(|_| VaultProovError::Other("missing file".to_string()))?;
+    let field = file.ok_or(VaultProovError::Other("missing file".to_string()))?;
+    let content_type = field.content_type().ok_or(VaultProovError::Other("missing content type".to_string()))?.to_string();
+    let bytes = field.bytes().await.map_err(|_| VaultProovError::Other("missing file".to_string()))?;
+    let mut output = Cursor::new(Vec::new());
+    sign(&content_type, &mut Cursor::new(&bytes), &mut output)?;
+    Ok(output.into_inner())
 }
