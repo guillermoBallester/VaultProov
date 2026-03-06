@@ -31,7 +31,12 @@ async fn main() -> Result<(), VaultProovError> {
             if args.len() != 4 {
                 return Err(VaultProovError::Other("missing file name".to_string()))
             }
-            sign(&args[2], &args[3])?;
+            let input_path = &args[2];
+            let output_path = &args[3];
+            let mut file = File::open(input_path)?;
+            let mut output = File::create(output_path)?;
+            let format = c2pa::format_from_path(input_path).ok_or(c2pa::Error::UnsupportedType)?;
+            sign(&format, &mut file, &mut output)?;
             Ok(())
         },
         "serve" => {
@@ -51,7 +56,7 @@ fn verify<R: Read + Seek + Send>(format: &str, stream: &mut R) -> Result<String,
     Ok(reader.json())
 }
 
-fn sign(input: &str, output: &str) -> Result<(), VaultProovError> {
+fn sign<R: Read + Seek + Send + std::io::Write>(format: &str, input: &mut R, output: &mut R) -> Result<(), VaultProovError> {
     let settings = std::fs::read_to_string("test_settings.toml")?;
     let shared_context = Context::new()
         .with_settings(Settings::new()
@@ -59,7 +64,7 @@ fn sign(input: &str, output: &str) -> Result<(), VaultProovError> {
         .into_shared();
     let mut builder = Builder::from_shared_context(&shared_context);
     builder.set_intent(BuilderIntent::Edit);
-    builder.sign_file(shared_context.signer()?, input, output)?;
+    builder.sign(shared_context.signer()?,  format, input, output)?;
     Ok(())
 }
 
