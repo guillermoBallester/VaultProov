@@ -57,7 +57,7 @@ fn verify<R: Read + Seek + Send>(format: &str, stream: &mut R) -> Result<String,
     Ok(reader.json())
 }
 
-fn sign<R: Read + Seek + Send , W: Read + Seek + Send + std::io::Write>(format: &str, input: &mut R, output: &mut W) -> Result<(), VaultProovError> {
+fn sign<R: Read + Seek + Send, W: Read + Seek + Send + std::io::Write>(format: &str, input: &mut R, output: &mut W) -> Result<(), VaultProovError> {
     let settings = std::fs::read_to_string("test_settings.toml")?;
     let shared_context = Context::new()
         .with_settings(Settings::new()
