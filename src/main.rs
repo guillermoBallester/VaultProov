@@ -1,7 +1,7 @@
 mod error;
 
 use std::env;
-use c2pa::Reader;
+use c2pa::{Builder, Reader, Settings,Context, BuilderIntent};
 use error::VaultProovError;
 
 fn main() -> Result<(), VaultProovError> {
@@ -19,6 +19,21 @@ fn main() -> Result<(), VaultProovError> {
             println!("{}", reader.json());
             Ok(())
         },
+        "sign" => {
+            if args.len() != 4 {
+                return Err(VaultProovError::Other("missing file name".to_string()))
+            }
+            let output_file = args[3].as_str();
+            let settings = std::fs::read_to_string("test_settings.toml")?;
+            let shared_context = Context::new()
+                .with_settings(Settings::new()
+                    .with_toml(&settings)?)?
+                .into_shared();
+            let mut builder = Builder::from_shared_context(&shared_context);
+            builder.set_intent(BuilderIntent::Edit);
+            builder.sign_file( shared_context.signer()?, &args[2], output_file)?;
+            Ok(())
+        }
         _ => Err(VaultProovError::Other("Invalid arguments".to_string()))
     }
 }
